@@ -1,0 +1,476 @@
+\documentclass{article}
+\usepackage[preprint]{aistats2027}
+\usepackage[round,authoryear]{natbib}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{url}
+\renewcommand{\bibname}{References}
+\renewcommand{\bibsection}{\subsubsection*{\bibname}}
+\bibliographystyle{apalike}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Pp}{\mathbb P}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\TV}{\mathrm{TV}}
+\newcommand{\Ber}{\mathrm{Bern}}
+\newcommand{\Poi}{\mathrm{Poi}}
+\newcommand{\cP}{\mathcal P}
+\newcommand{\cA}{\mathsf A}
+\newcommand{\cB}{\mathsf B}
+\newcommand{\one}{\mathbf 1}
+\begin{document}
+\runningauthor{}
+\onecolumn
+\begin{center}
+{\Large\bfseries Supplement to ``Exact Recovery Tensorizes Likelihood-Free Testing''}\\[0.75em]
+Pahan Dewasurendra
+\end{center}
+
+This supplement proves the adaptive tensorization lemma, the three paired mixture profiles, the pseudo-distribution lifting step, and the matching upper bound. Constants denoted by $c,C$ may change between displays. All logarithms are natural.
+
+\section{Setup and Elementary Reductions}
+
+In the paired experiment there are two named reference sources with laws $P$ and $Q$, together with $K$ target pairs. A bit $v_i$ specifies the orientation of pair $i$. The two targets in that pair have laws $(P,Q)$ when $v_i=1$ and $(Q,P)$ when $v_i=0$. The algorithm may sample any source based on its complete transcript and must use at most $T$ observations on every path.
+
+If outputs are treated as unordered partitions, $v$ and $\one-v$ represent the same answer. For $K\geq3$, the partitions represented by $v^i$ are distinct as $i$ varies over any subset of coordinates. Indeed, $v^i=v^j$ implies $i=j$, while $v^i=\one-v^j$ would require $v$ and $\one-v$ to agree outside at most two coordinates. This is impossible for $K\geq3$. Thus all neighboring-output events used below are disjoint even under the partition convention.
+
+\begin{lemma}[A pathwise baseline]
+\label{lem:baseline}
+Any procedure with worst-case success probability at least $7/8$ in the paired problem has $T\geq K/2$.
+\end{lemma}
+
+\begin{proof}
+Give the procedure the two distributions explicitly and draw the $K$ orientations independently and uniformly. Every pair that is never sampled retains an independent fair orientation conditional on the transcript. At most $T$ pairs can be sampled. If $T<K/2$, the conditional probability of recovering every orientation is at most $2^{-K/2}<7/8$. Averaging contradicts the worst-case guarantee.
+\end{proof}
+
+We use the binary relative entropy
+\[
+\operatorname{kl}(x,y)=x\log\frac{x}{y}+(1-x)\log\frac{1-x}{1-y}.
+\]
+
+\begin{lemma}[Binary constant]
+\label{lem:binary}
+If $K\geq32$, $\delta\leq1/8$, $x\geq5/8$, and $y\leq2\delta/K$, then
+\[
+\operatorname{kl}(x,y)\geq\frac18\log(K/\delta).
+\]
+\end{lemma}
+
+\begin{proof}
+Here $y<5/8$, so binary relative entropy increases in $x$ and decreases in $y$. Also
+\[
+\operatorname{kl}(5/8,y)\geq\frac58\log(1/y)-\log2.
+\]
+Substitute $y=2\delta/K$. The claimed inequality follows from $K/\delta\geq256$.
+\end{proof}
+
+\section{Directed Adaptive Tensorization}
+
+For a prior $\Pi$ on valid pairs $(P,Q)$ and integers $s,t$, define
+\begin{align*}
+\cA_{s,t}&=\E_\Pi[P^{\otimes s}\otimes Q^{\otimes s}\otimes P^{\otimes t}\otimes Q^{\otimes t}],\\
+\cB_{s,t}&=\E_\Pi[P^{\otimes s}\otimes Q^{\otimes s}\otimes Q^{\otimes t}\otimes P^{\otimes t}].
+\end{align*}
+
+\begin{lemma}[Directed adaptive tensorization]
+\label{lem:full-tensor}
+Suppose a pathwise-$T$ algorithm solves the paired problem with error at most $\delta$. For $\tau=\lceil16T/K\rceil$,
+\[
+\KL(\cA_{T,\tau}\|\cB_{T,\tau})\geq\frac18\log(K/\delta).
+\]
+\end{lemma}
+
+\begin{proof}
+For every $v\in\{0,1\}^K$ and $i$ with $v_i=0$, direct the edge from $v$ to $u=v^i$. In the experiment associated with this edge, stop immediately before the algorithm requests observation $\tau+1$ from the two sources in pair $i$. Let $\Pp_u^e$ and $\Pp_v^e$ be the resulting capped transcript laws after averaging over $\Pi$. Let $E_e$ be the event that the algorithm terminates before the cap and outputs the partition represented by $u$. Set
+\[
+a_e=\Pp_u^e(E_e),\qquad q_e=\Pp_v^e(E_e).
+\]
+There are $M=K2^{K-1}$ directed edges. For fixed $v$, the neighboring partitions in its outgoing edges are distinct wrong outputs. Consequently,
+\[
+\sum_e q_e\leq2^K\delta,\qquad \bar q=\frac1M\sum_e q_e\leq\frac{2\delta}{K}.
+\]
+
+Let $N_i$ be the total observations from pair $i$ in the uncapped run. Correctness under $u$ gives
+\[
+a_e\geq1-\delta-\Pp_u(N_i>\tau).
+\]
+Changing variables from $(v,i)$ to $(u,i)$ and applying Markov's inequality gives
+\begin{align*}
+\frac1M\sum_e\Pp_u(N_i>\tau)
+&\leq\frac{1}{M\tau}\sum_u\sum_{i:u_i=1}\E_uN_i\\
+&\leq\frac{2T}{K\tau}\leq\frac18.
+\end{align*}
+Thus $\bar a\geq1-\delta-1/8\geq3/4$, and in particular $\bar a\geq5/8$. Binary data processing, joint convexity, and Lemma~\ref{lem:binary} yield
+\begin{align*}
+\frac1M\sum_e\KL(\Pp_u^e\|\Pp_v^e)
+&\geq\frac1M\sum_e\operatorname{kl}(a_e,q_e)\\
+&\geq\operatorname{kl}(\bar a,\bar q)\\
+&\geq\frac18\log(K/\delta).
+\end{align*}
+
+Fix one edge. A table with $T$ samples from each global reference and $\tau$ samples from each source in the changed pair simulates the capped transcript. For every unchanged source, its law is the same at both endpoints. Its observations can therefore be drawn from the corresponding global reference pool. At most $T$ observations in total are requested, so neither global pool is exhausted. The simulation is the same Markov kernel under both endpoint laws. Data processing gives
+\[
+\KL(\Pp_u^e\|\Pp_v^e)\leq\KL(\cA_{T,\tau}\|\cB_{T,\tau}).
+\]
+Combining this inequality with the average lower bound proves the lemma.
+\end{proof}
+
+The direction of the edges matters. Allocation is controlled under the numerator endpoint $u$, while disjoint wrong outputs are controlled under the denominator endpoint $v$. No reverse-divergence comparison is used.
+
+\section{The Known Pair Profile}
+
+\begin{lemma}[Bernoulli profile]
+\label{lem:bernoulli-profile}
+For $0<\varepsilon\leq1/2$, there is a fixed pair at total variation $\varepsilon$ such that
+\[
+\KL(\cA_{s,t}\|\cB_{s,t})\leq C\varepsilon^2t.
+\]
+\end{lemma}
+
+\begin{proof}
+Take $P=\Ber((1+\varepsilon)/2)$ and $Q=\Ber((1-\varepsilon)/2)$. The reference factors cancel, and tensorization gives
+\[
+\KL(\cA_{s,t}\|\cB_{s,t})
+=t\{\KL(P\|Q)+\KL(Q\|P)\}.
+\]
+The expression in braces equals $2\varepsilon\log((1+\varepsilon)/(1-\varepsilon))\leq C\varepsilon^2$.
+\end{proof}
+
+\section{Dense Paired Mixtures}
+
+We first record a constant-factor transfer from Poissonized tables to fixed tables.
+
+\begin{lemma}[Poisson oversampling]
+\label{lem:depoisson}
+Let $\cA^{\rm P}_{cs,ct}$ and $\cB^{\rm P}_{cs,ct}$ be the four-pool Poissonized versions of $\cA_{s,t}$ and $\cB_{s,t}$ for priors on probability distributions. For a sufficiently large universal $c$,
+\[
+\KL(\cA_{s,t}\|\cB_{s,t})\leq C\KL(\cA^{\rm P}_{cs,ct}\|\cB^{\rm P}_{cs,ct}).
+\]
+\end{lemma}
+
+\begin{proof}
+The total counts in the four Poisson pools are independent of $(P,Q)$ and have the same law under both orientations. With probability at least a universal constant, every reference pool has at least $s$ observations and every target pool has at least $t$ observations. Map the Poisson table to an abort symbol on the complement of this event and to the first required number of labels on the event. The output divergence equals the success probability times $\KL(\cA_{s,t}\|\cB_{s,t})$. Data processing proves the result.
+\end{proof}
+
+For $m=\lfloor N/2\rfloor$, pair symbols $(2j-1,2j)$ for $j\leq m$. Let $Q$ be uniform. Draw independent signs $\eta_j$, and set
+\[
+P_\eta(2j-1)=\frac{1+a\eta_j}{N},\qquad
+P_\eta(2j)=\frac{1-a\eta_j}{N}.
+\]
+If $N$ is odd, leave the final probability equal to $1/N$. Choose $a=\varepsilon N/m$. Then $\TV(P_\eta,Q)=\varepsilon$ and $a\leq3\varepsilon$. For sufficiently small $\varepsilon$ depending on $B>1$, both distributions belong to $\cP_N(B)$.
+
+We analyze one symbol pair in a Poissonized table. Write $\lambda=s/N$ and $\mu=t/N$. The $P_\eta$ reference counts have laws
+\[
+F_\eta=\Poi(\lambda(1+a\eta))\otimes\Poi(\lambda(1-a\eta)).
+\]
+The uniform channel is $U_\mu=\Poi(\mu)\otimes\Poi(\mu)$. Conditional on the reference count $X$, let $m_X=\E[\eta\mid X]$. The posterior-predictive target channel is
+\[
+M_{m,\mu}=\frac{1+m}{2}F_{+}^{(\mu)}+\frac{1-m}{2}F_{-}^{(\mu)}.
+\]
+The two orientations conditional on $X$ are $M_{m_X,\mu}\otimes U_\mu$ and $U_\mu\otimes M_{m_X,\mu}$. Their divergence is the Jeffreys divergence
+\[
+J(M_{m_X,\mu},U_\mu)=\KL(M_{m_X,\mu}\|U_\mu)+\KL(U_\mu\|M_{m_X,\mu}).
+\]
+
+\begin{lemma}[Posterior-predictive channel]
+\label{lem:dense-channel}
+There are universal $c,C>0$ such that if $a^2\lambda\leq c$ and $a^2\mu\leq c$, then
+\begin{align*}
+\E m_X^2&\leq Ca^2\lambda,\\
+J(M_{m,\mu},U_\mu)&\leq C\{a^2\mu m^2+a^4\mu^2\}.
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+Let $f_+$ and $f_-$ be the reference densities under the two signs. Under their equal mixture,
+\[
+\E m_X^2=\frac12\int\frac{(f_+-f_-)^2}{f_++f_-}
+\leq\frac12\chi^2(f_+\|f_-).
+\]
+The Poisson product formula gives $\chi^2(f_+\|f_-)\leq\exp(Ca^2\lambda)-1$, which proves the first claim.
+
+For the target channel, let $r_+$ and $r_-$ be the sign-channel likelihood ratios with respect to $U_\mu$. Direct Poisson moment calculation gives
+\[
+\E_{U_\mu}r_+^2=\E_{U_\mu}r_-^2=e^{2a^2\mu},\qquad
+\E_{U_\mu}r_+r_-=e^{-2a^2\mu}.
+\]
+Since $dM_{m,\mu}/dU_\mu=((1+m)r_++(1-m)r_-)/2$,
+\[
+\chi^2(M_{m,\mu}\|U_\mu)
+=\cosh(2a^2\mu)-1+m^2\sinh(2a^2\mu).
+\]
+This is at most $C(a^4\mu^2+a^2\mu m^2)$ under the local condition, and it bounds the forward KL.
+
+It remains to bound the reverse KL. Let $R$ be the total target count, let $S$ be the first count minus the second, and put $b=\operatorname{atanh}(a)$. The predictive density factors as
+\[
+\frac{dM_{m,\mu}}{dU_\mu}=f_0(R,S)\{1+m\tanh(bS)\},
+\]
+where $f_0$ is the density for $m=0$. Symmetry of $S$ and the convexity inequality
+\[
+-\tfrac12\log(1-m^2z^2)\leq -\tfrac{m^2}{2}\log(1-z^2)
+\]
+give
+\[
+\KL(U_\mu\|M_{m,\mu})
+\leq\KL(U_\mu\|M_{0,\mu})+2m^2\E\log\cosh(bS).
+\]
+Because $\log\cosh x\leq x^2/2$, $b^2\leq Ca^2$, and $\E S^2=2\mu$, the second term is at most $Cm^2a^2\mu$.
+
+Conditional on $R=r$, the zero-mean density $f_0$ is the equal mixture of two binomial sign channels. It equals one for $r=0,1$. For $r\geq2$, expansion of the two binomial likelihoods gives
+\begin{align*}
+f_0&\geq e^{-Cra^2},\\
+\E[(f_0-1)^2\mid R=r]&\leq Cr(r-1)a^4e^{Cra^2}.
+\end{align*}
+The inequality $-\log x+x-1\leq(x-1)^2/(x\wedge1)$ then yields
+\[
+\KL(U_\mu\|M_{0,\mu})
+\leq Ca^4\E[R(R-1)e^{Ca^2R}]
+\leq Ca^4\mu^2,
+\]
+where the final step uses $R\sim\Poi(2\mu)$ and $a^2\mu\leq c$. This proves the reverse bound.
+\end{proof}
+
+\begin{proposition}[Dense profile]
+\label{prop:dense-profile}
+If $t\leq s$ and $\varepsilon^2s/N$ is at most a sufficiently small constant, the preceding prior satisfies
+\[
+\KL(\cA_{s,t}\|\cB_{s,t})\leq C\frac{\varepsilon^4st}{N}.
+\]
+\end{proposition}
+
+\begin{proof}
+Lemma~\ref{lem:dense-channel} shows that one symbol pair contributes at most
+\[
+C\{a^4\lambda\mu+a^4\mu^2\}.
+\]
+There are $m\leq N/2$ independent pairs. Since $t\leq s$ and $a\asymp\varepsilon$, the Poissonized divergence is at most $C\varepsilon^4st/N$. Lemma~\ref{lem:depoisson} proves the fixed-table claim after changing the universal constant in the local condition.
+\end{proof}
+
+\section{Sparse Paired Mixtures}
+
+The sparse construction uses random finite measures, also called pseudo-distributions. Fix $s\leq N/2$ and $0<\zeta\leq1/8$. Independently at each symbol, draw
+\[
+(\widetilde p_j,\widetilde q_j)=
+\begin{cases}
+(1/s,1/s),&\text{with probability }s/N,\\
+(\zeta/N,2\zeta/N),&\text{with probability }(1-s/N)/2,\\
+(\zeta/N,0),&\text{with probability }(1-s/N)/2.
+\end{cases}
+\]
+Let $\widetilde\cA_{s,t}$ and $\widetilde\cB_{s,t}$ be the four-pool Poisson count laws with respective intensities $(s,s,t,t)$ and with the two target pools swapped under $\widetilde\cB_{s,t}$.
+
+\begin{proposition}[Sparse four-count profile]
+\label{prop:sparse-profile}
+For $t\leq s\leq N/2$,
+\[
+\KL(\widetilde\cA_{s,t}\|\widetilde\cB_{s,t})
+\leq C\frac{\zeta^4s^2t}{N^2}.
+\]
+\end{proposition}
+
+\begin{proof}
+It is enough to analyze one coordinate. Put
+\[
+\rho=\frac ts,\qquad \lambda=\frac{\zeta s}{N},\qquad
+\mu=\frac{\zeta t}{N},\qquad \theta=\lambda\mu.
+\]
+Let $(A,B,C,D)$ denote the two reference and two target counts. For $x=(a,b,c,d)$ and $F_x=a!b!c!d!$, the one-coordinate probabilities under the two orientations are
+\begin{align*}
+X(x)=\frac1{F_x}\bigg[&\frac{s}{N}e^{-2-2\rho}\rho^{c+d}
++\frac{1-s/N}{2}e^{-3\lambda-3\mu}\lambda^a(2\lambda)^b\mu^c(2\mu)^d\\
+&+\frac{1-s/N}{2}e^{-\lambda-\mu}\lambda^a\mu^c\one\{b=d=0\}\bigg],\\
+Y(x)=\frac1{F_x}\bigg[&\frac{s}{N}e^{-2-2\rho}\rho^{c+d}
++\frac{1-s/N}{2}e^{-3\lambda-3\mu}\lambda^a(2\lambda)^b(2\mu)^c\mu^d\\
+&+\frac{1-s/N}{2}e^{-\lambda-\mu}\lambda^a\mu^d\one\{b=c=0\}\bigg].
+\end{align*}
+The common heavy component implies
+\[
+Y(x)\geq\frac{c}{F_x}\frac{s}{N}\rho^{c+d}.
+\]
+After factoring $\lambda^a\mu^{c+d}/F_x$, the difference $X(x)-Y(x)$ is a constant multiple of
+\[
+I_{bcd}=e^{-3\lambda-3\mu}2^b\lambda^b(2^d-2^c)
++e^{-\lambda-\mu}\one\{b=0\}\{\one\{d=0\}-\one\{c=0\}\}.
+\]
+It vanishes when $c=d$. Since $\mu^2/\rho=\lambda\mu=\theta$,
+\[
+\frac{(X(x)-Y(x))^2}{Y(x)}
+\leq\frac{C}{F_x}\frac Ns\lambda^{2a}\theta^{c+d}I_{bcd}^2.
+\]
+
+We sum this bound in three cases. If $c+d=1$ and $b=0$, the two terms in $I_{bcd}$ cancel at zeroth order. Hence $|I_{bcd}|\leq C(\lambda+\mu)\leq C\lambda$. If $c+d=1$ and $b\geq1$, the second term vanishes and $|I_{bcd}|\leq C2^b\lambda^b$. If $c+d\geq2$, then $\theta^{c+d}\leq\theta^2\leq\lambda^2\theta$. The factorial sums of the remaining powers of $2$, $\lambda$, and $\theta$ are bounded because $\lambda,\theta\leq1/8$. Therefore
+\[
+\sum_{b,c,d\geq0}\frac{\theta^{c+d}I_{bcd}^2}{b!c!d!}
+\leq C\lambda^2\theta.
+\]
+Also $\sum_a\lambda^{2a}/a!=e^{\lambda^2}\leq C$. It follows that
+\[
+\chi^2(X\|Y)\leq C\frac Ns\lambda^2\theta
+=C\frac{\zeta^4s^2t}{N^3}.
+\]
+The coordinate priors are independent, so both table laws are $N$-fold products. The product identity for chi-square and $\KL\leq\log(1+\chi^2)$ give
+\[
+\KL(\widetilde\cA_{s,t}\|\widetilde\cB_{s,t})
+\leq N\chi^2(X\|Y),
+\]
+which proves the claim.
+\end{proof}
+
+We next transfer an exact-recovery algorithm for probability distributions to the random finite measures.
+
+\begin{lemma}[Normalization and separation]
+\label{lem:normalization}
+There are universal $c,C>0$ such that the event $G$ below has probability at least
+\[
+1-2e^{-cs}-2e^{-cN}.
+\]
+On $G$, both total masses lie in $[1/4,3]$, and for $\zeta=32\varepsilon$ their normalized versions are at total variation at least $\varepsilon$.
+\end{lemma}
+
+\begin{proof}
+Let $H$ be the number of heavy coordinates. On the other coordinates, let $\sigma_j$ be $1$ for the atom $(\zeta/N,2\zeta/N)$ and $-1$ for $(\zeta/N,0)$. The two masses and their raw $\ell_1$ distance are
+\begin{align*}
+M_p&=\frac Hs+\frac{\zeta(N-H)}{N},\\
+M_q&=M_p+\frac\zeta N\sum_{j: \mathrm{rare}}\sigma_j,\\
+D&=\frac{\zeta(N-H)}{N}.
+\end{align*}
+Chernoff bounds give $H\in[s/2,3s/2]$ except with probability $2e^{-cs}$. Conditional on this event and $s\leq N/2$, there are at least $N/4$ rare coordinates. Hoeffding's inequality gives
+\[
+\left|\sum_{j: \mathrm{rare}}\sigma_j\right|\leq\frac{N-H}{2}
+\]
+except with probability $2e^{-cN}$. Define $G$ as the intersection. On $G$, the displayed mass bounds hold and $|M_q-M_p|\leq D/2$. The triangle inequality gives
+\[
+\left\|\frac{\widetilde p}{M_p}-\frac{\widetilde q}{M_q}\right\|_1
+\geq\frac{D-|M_q-M_p|}{M_p}
+\geq\frac{\zeta}{16}.
+\]
+Thus the normalized total variation is at least $\zeta/32=\varepsilon$.
+\end{proof}
+
+\begin{lemma}[Poisson-table lifting]
+\label{lem:pseudo-lifting}
+Let a prior on finite measures satisfy the conclusions of Lemma~\ref{lem:normalization} with failure probability $\beta$. Suppose a pathwise-$T$ algorithm solves every valid paired instance with error at most $\delta$, and let $\tau=\lceil16T/K\rceil$. There is a universal oversampling constant $C_0$ such that, for $s=C_0T$ and $t=C_0\tau$,
+\[
+\KL(\widetilde\cA_{s,t}\|\widetilde\cB_{s,t})
+\geq c\log\frac{K}{\delta+\beta+\eta},
+\]
+where $\eta\leq Ce^{-cT}+Ce^{-c\tau}$ is the Poisson-pool exhaustion probability on $G$.
+\end{lemma}
+
+\begin{proof}
+Conditional on a finite measure and its total Poisson count, the labels are iid from the normalized measure. On $G$, the masses are bounded below. With $C_0$ sufficiently large, a global pool of intensity $s$ supplies all $T$ requested labels with probability at least $1-Ce^{-cT}$, and each changed-target pool of intensity $t$ supplies $\tau$ labels with probability at least $1-Ce^{-c\tau}$.
+
+Run the directed-edge simulation from Lemma~\ref{lem:full-tensor}, now aborting on pool exhaustion. Averaged over numerator edges, the probability of the correct neighboring output before cap and exhaustion is at least
+\[
+\bar a\geq(1-\beta)(1-\delta)-\frac18-\eta.
+\]
+For each denominator configuration, neighboring wrong outputs have total probability at most $\delta$ on $G$ and at most one on $G^c$. Hence
+\[
+\bar q\leq\frac{2(\delta+\beta)}{K}.
+\]
+Binary data processing and joint convexity give the displayed conclusion whenever $\beta+\eta$ is below a small constant. The stated logarithm also covers the remaining values after decreasing $c$.
+\end{proof}
+
+\section{Proof of the Lower Bounds}
+
+Put $L=\log(K/\delta)$. Lemmas~\ref{lem:baseline} and \ref{lem:full-tensor} are used throughout. The baseline implies
+\[
+\tau=\left\lceil\frac{16T}{K}\right\rceil\leq\frac{18T}{K}.
+\]
+
+For the known-pair term, Lemma~\ref{lem:bernoulli-profile} gives
+\[
+L\leq C\varepsilon^2\tau\leq C\frac{\varepsilon^2T}{K},
+\]
+and therefore $T\geq cKL/\varepsilon^2$.
+
+For the dense term, it is enough to consider $N\geq KL$, since otherwise the known-pair term dominates $\sqrt{NKL}/\varepsilon^2$. Suppose for contradiction that
+\[
+T<c_0\frac{\sqrt{NKL}}{\varepsilon^2}.
+\]
+For small enough $c_0$, the local condition in Proposition~\ref{prop:dense-profile} holds because $\varepsilon^2T/N\leq c_0\sqrt{KL/N}$. The tensorization and dense profile bounds imply
+\[
+L\leq C\frac{\varepsilon^4T\tau}{N}
+\leq C\frac{\varepsilon^4T^2}{KN},
+\]
+which contradicts the assumed bound on $T$. This proves the square-root term with a prior in $\cP_N(B)$.
+
+For the sparse term, it is enough to consider
+\[
+N\geq\frac{KL}{\varepsilon^4},
+\]
+since otherwise the square-root term dominates the cubic term. The known-pair lower bound gives $T/K\geq cL/\varepsilon^2$. Choose the oversampling constant in Lemma~\ref{lem:pseudo-lifting}, set $s=C_0T$, $t=C_0\tau$, and use the sparse prior with this value of $s$. Under a contradiction assumption
+\[
+T<c_0\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3},
+\]
+small enough $c_0$ ensures $s\leq N/2$. Lemma~\ref{lem:normalization}, the active-regime inequality, and the known-pair lower bound give
+\[
+\beta+\eta\leq Ce^{-cs}+Ce^{-cN}+Ce^{-c\tau}\leq C\delta
+\]
+after increasing fixed oversampling constants. Lemmas~\ref{lem:pseudo-lifting} and Proposition~\ref{prop:sparse-profile} now imply
+\[
+L\leq C\frac{\varepsilon^4s^2t}{N^2}
+\leq C\frac{\varepsilon^4T^3}{KN^2},
+\]
+which is the desired contradiction. The three hard families are separate, so all three lower bounds hold simultaneously. Their maximum is equivalent up to a factor three to their sum.
+
+All constructions use the revealed paired model and preserve exactly $K$ members of each class. Removing pair information can only make the problem harder. Giving named reference sources is additional information relative to discovering the two clusters from scratch, so the same classification-stage lower bounds transfer to distribution clustering.
+
+\section{Proof of the Upper Bounds}
+
+We use the high-confidence LFHT regions of \citet{gerber2023classification}. A sufficient form for a discrete alphabet of size $N$, target error $\eta$, target count $t$, and reference count $s$ from each of $P,Q$ is
+\begin{align}
+t&\geq C\frac{\log(1/\eta)}{\varepsilon^2},
+\label{eq:upper-t}\\
+s&\geq C\left\{\frac{\sqrt{N\log(1/\eta)}}{\varepsilon^2}+\frac{\log(1/\eta)}{\varepsilon^2}\right\},
+\label{eq:upper-s}\\
+st&\geq C\frac{N\log(1/\eta)}{\varepsilon^4}.
+\label{eq:upper-dense}
+\end{align}
+For arbitrary discrete distributions, their unrestricted region additionally permits a test under
+\begin{equation}
+s^2t\geq C\frac{N^2\log(1/\eta)}{\varepsilon^4}.
+\label{eq:upper-sparse}
+\end{equation}
+The bounded-mass class needs only \eqref{eq:upper-t}--\eqref{eq:upper-dense}. These conditions are a convenient sufficient subregion of their minimax characterization, rather than a new binary testing claim.
+
+Set $\eta=\delta/K$ and define
+\[
+A=\frac{KL}{\varepsilon^2},\qquad
+B_0=\frac{\sqrt{NKL}}{\varepsilon^2},\qquad
+C_0=\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}.
+\]
+For the unrestricted class choose, after multiplication by a sufficiently large universal constant,
+\[
+s=A+B_0+C_0,\qquad t=\frac{A+B_0+C_0}{K}.
+\]
+Then $t\geq L/\varepsilon^2$, $s$ satisfies \eqref{eq:upper-s}, and
+\[
+st\geq\frac{B_0^2}{K}=\frac{NL}{\varepsilon^4},\qquad
+s^2t\geq\frac{C_0^3}{K}=\frac{N^2L}{\varepsilon^4}.
+\]
+Run this LFHT rule on every target using the same two reference samples. A union bound gives exact-recovery error at most $\delta$, and the total observations are
+\[
+2s+Kt\leq C(A+B_0+C_0).
+\]
+For $\cP_N(B)$, omit $C_0$ and use the bounded-mass region. If $P,Q$ are known, the Scheff\'e set $S=\{x:P(x)\geq Q(x)\}$ has $|P(S)-Q(S)|=\TV(P,Q)$. Hoeffding's inequality applied to the target empirical mass on $S$ gives error $\eta$ with $C\log(1/\eta)/\varepsilon^2$ observations. Applying this independently to all targets proves the known-reference upper bound.
+
+\paragraph{Derivation of the sufficient subregion.}
+Write $h=\log(1/\eta)$ and
+\[
+g=\frac{\sqrt{Nh}}{\varepsilon^2}+\frac{h}{\varepsilon^2}.
+\]
+For bounded masses, the minimax LFHT table of \citet{gerber2023classification} requires $t\gtrsim h/\varepsilon^2$, $s\gtrsim g$, and $st\gtrsim g^2$. Conditions \eqref{eq:upper-t}--\eqref{eq:upper-dense} imply these because their first two inequalities also give $st\gtrsim h^2/\varepsilon^4$.
+
+For unrestricted distributions, the only additional regime is $N\gtrsim h/\varepsilon^4$. Our allocation has $s\geq t$. In this row of their minimax table, the extra requirement is
+\[
+ts^2\gtrsim Ng^2.
+\]
+The active-regime inequality gives $Ng^2\leq C N^2h/\varepsilon^4$, so \eqref{eq:upper-sparse} implies it. When $N\lesssim h/\varepsilon^4$, the bounded-mass subregion already suffices for the unrestricted class. This verifies the four displayed sufficient conditions in every parameter regime.
+
+\bibliography{references}
+\end{document}

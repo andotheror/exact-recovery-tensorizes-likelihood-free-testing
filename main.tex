@@ -1,0 +1,282 @@
+\documentclass[twoside]{article}
+\usepackage[preprint]{aistats2027}
+\usepackage[round,authoryear]{natbib}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{url}
+\renewcommand{\bibname}{References}
+\renewcommand{\bibsection}{\subsubsection*{\bibname}}
+\bibliographystyle{apalike}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Pp}{\mathbb P}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\TV}{\mathrm{TV}}
+\newcommand{\Ber}{\mathrm{Bern}}
+\newcommand{\Poi}{\mathrm{Poi}}
+\newcommand{\cP}{\mathcal P}
+\newcommand{\cA}{\mathsf A}
+\newcommand{\cB}{\mathsf B}
+\newcommand{\one}{\mathbf 1}
+\begin{document}
+\runningauthor{}
+\twocolumn[
+\aistatstitle{Exact Recovery Tensorizes Likelihood-Free Testing}
+\aistatsauthor{Pahan Dewasurendra}
+\aistatsaddress{Johns Hopkins University}
+]
+\begin{abstract}
+Likelihood-free testing classifies one target using samples from two unknown reference distributions. What is the cost of classifying many targets exactly when reference samples can be shared and sampling can be fully adaptive? A recent distribution-clustering result answers this question up to a factor $\log K$. We close the gap. For $K$ targets over an $N$-symbol alphabet, separation $\varepsilon$ in total variation, and exact-recovery error $\delta$, the minimax total sample complexity for arbitrary discrete distributions is
+\[
+\Theta\!\left(\begin{aligned}
+&\frac{K\log(K/\delta)}{\varepsilon^2}
++\frac{\sqrt{NK\log(K/\delta)}}{\varepsilon^2}\\
+&\quad+\left(\frac{N^2K\log(K/\delta)}{\varepsilon^4}\right)^{1/3}
+\end{aligned}\right).
+\]
+The cubic term disappears for uniformly bounded probability masses, and both nuisance-estimation terms disappear when the references are known. The lower bound holds even when the two class sizes are known, the targets arrive in revealed pairs containing one member of each class, and the algorithm allocates samples adaptively. The proof introduces a directed adaptive tensorization lemma. Neighboring wrong outputs have total probability at most $\delta$, while a capped changed pair receives only $O(T/K)$ samples on average. Joint convexity of binary relative entropy then forces one capped likelihood-free experiment to carry $\Omega(\log(K/\delta))$ information. Dense Paninski and sparse Poisson-mixture priors produce the square-root and cubic phases. The result shows that the union-bound logarithm in exact likelihood-free classification is minimax, rather than an artifact of testing targets separately.
+\end{abstract}
+
+\section{Introduction}
+
+Likelihood-free hypothesis testing (LFHT) asks whether a target sample comes from $P$ or $Q$ when the two distributions are available only through reference samples. It is a basic model for simulation-based inference and classifier-based testing \citep{gerber2024lfht,gerber2023classification}. A natural extension has many target sources, each equal to the same unknown $P$ or $Q$, and asks for every label. Reference observations can now be shared, and an algorithm may adaptively concentrate target samples where uncertainty remains.
+
+This multiple-target problem is the classification stage in the distribution-clustering model of \citet{kumar2026clustering}. They give an upper bound by running high-confidence LFHT for every target with error $O(1/K)$. Their lower bound uses a capped switching reduction to one constant-confidence LFHT instance. The resulting rates differ by a factor up to $\log K$, and the authors leave both this gap and explicit failure-probability dependence open.
+
+We prove that the logarithm is necessary in every phase. Let
+\[
+L=\log(K/\delta).
+\]
+For arbitrary distributions on $[N]$, the exact minimax cost is
+\begin{equation}
+\frac{KL}{\varepsilon^2}
++\frac{\sqrt{NKL}}{\varepsilon^2}
++\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}.
+\label{eq:headline}
+\end{equation}
+The three terms have different origins. The first remains when $P,Q$ are known. The second is the cost of learning a dense bounded perturbation. The third is caused by sparse heavy atoms and occurs only for unrestricted discrete distributions.
+
+The central issue is not binary LFHT. Its high-confidence minimax regions are known \citep{gerber2023classification}. The issue is direct-sum behavior under exact recovery and adaptive allocation. A naive reduction selects a lightly sampled coordinate under one configuration. It yields one constant-confidence test and loses $\log K$. Applying Fano's inequality to all $2^K$ labelings yields only $O(K)$ total information, which is again too small. Exact recovery needs $K\log K$ information at constant error in the moderate-confidence regime.
+
+Our directed tensorization argument obtains this scale without posterior independence. We orient every hypercube edge from a $Q$ target to a $P$ target. Under a denominator configuration, the probabilities of outputting its different neighboring configurations sum to at most $\delta$. Under numerator configurations, the changed coordinates receive only $O(T/K)$ samples on average. Capping them at that level loses only constant numerator probability. Binary data processing and joint convexity then give average edge divergence $\Omega(L)$.
+
+The argument remains valid under a strong fixed-size promise. We place $2K$ targets in $K$ revealed pairs and promise that each pair contains one $P$ and one $Q$. Every configuration has exactly $K$ targets of each type. Flipping one bit swaps a pair. This also removes any concern that the logarithm comes from unknown cluster sizes.
+
+\paragraph{Contributions.} We provide:
+\begin{itemize}
+\item an adaptive exact-recovery tensorization lemma for experiments with a shared nuisance distribution
+\item the exact finite-confidence minimax rates for known, bounded discrete, and unrestricted discrete references
+\item lower bounds that retain known balanced class sizes and revealed opposite-label pairings
+\item a direct resolution of the classification-stage logarithmic gap in \citet{kumar2026clustering}
+\end{itemize}
+
+\section{Problem and Results}
+
+Let $P,Q$ be distributions on $[N]$ with $\TV(P,Q)\geq\varepsilon$. Two reference sources generate iid observations from $P$ and $Q$. There are $K$ target sources $D_1,\ldots,D_K$, each equal to $P$ or $Q$. At each time, an algorithm chooses a source using the complete past and receives one fresh observation. It must output all target labels. The total number of observations is at most $T$ on every path. We call this problem \emph{exact multiple LFHT}.
+
+Let $\cP_N$ be all distributions on $[N]$, and for a fixed $B>1$ let
+\[
+\cP_N(B)=\{p:\|p\|_\infty\leq B/N\}.
+\]
+Write $T^\star_{\cP}$ for the smallest worst-case pathwise budget giving exact-recovery error at most $\delta$. If $P,Q$ are known explicitly, reference samples are unnecessary and we write $T^\star_{\rm known}$.
+
+\begin{theorem}[Exact multiple LFHT]
+\label{thm:main}
+For every fixed $B>1$, there are constants $c,C>0$ and $\varepsilon_0=\varepsilon_0(B)>0$ such that for $N\geq2$, $K\geq32$, $0<\delta\leq1/8$, and $0<\varepsilon\leq\varepsilon_0$,
+\begin{align}
+T^\star_{\rm known}
+&\asymp \frac{KL}{\varepsilon^2},
+\label{eq:known}\\
+T^\star_{\cP_N(B)}
+&\asymp \frac{KL}{\varepsilon^2}
++\frac{\sqrt{NKL}}{\varepsilon^2},
+\label{eq:bounded}\\
+T^\star_{\cP_N}
+&\asymp \frac{KL}{\varepsilon^2}
++\frac{\sqrt{NKL}}{\varepsilon^2}
++\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}.
+\label{eq:arbitrary}
+\end{align}
+The constants in \eqref{eq:bounded} may depend on $B$.
+\end{theorem}
+
+Sums and maxima of the displayed terms are equivalent up to a factor three. The phase boundaries in \eqref{eq:arbitrary} are $N\asymp KL$ and $N\asymp KL/\varepsilon^4$.
+
+\begin{theorem}[Balanced paired lower bound]
+\label{thm:paired}
+Every lower bound in Theorem~\ref{thm:main} continues to hold, up to universal constants, under the following additional information. There are $2K$ targets in $K$ revealed pairs, each pair contains exactly one $P$ target and one $Q$ target, and the algorithm is told that both class sizes equal $K$.
+\end{theorem}
+
+The paired problem is easier than balanced distribution clustering. Thus Theorem~\ref{thm:paired} also applies when pair information is removed. The explicit reference sources are side information for the original clustering problem, so the lower bounds apply to its classification cost.
+
+\section{Adaptive Tensorization}
+
+We present the fixed-table form of the main lemma. A Poisson-table extension used for the sparse construction appears in the supplement.
+
+Let $\Pi$ be a prior on pairs $(P,Q)$. For integers $s,t$, define the two paired table laws
+\begin{align*}
+\cA_{s,t}&=\E_\Pi[P^{\otimes s}\otimes Q^{\otimes s}
+\otimes P^{\otimes t}\otimes Q^{\otimes t}],\\
+\cB_{s,t}&=\E_\Pi[P^{\otimes s}\otimes Q^{\otimes s}
+\otimes Q^{\otimes t}\otimes P^{\otimes t}].
+\end{align*}
+
+\begin{lemma}[Directed adaptive tensorization]
+\label{lem:tensor}
+Suppose $\Pi$ is supported on valid pairs. If a pathwise-$T$ algorithm solves the paired problem with error at most $\delta$, then for $\tau=\lceil16T/K\rceil$,
+\begin{equation}
+\KL(\cA_{T,\tau}\|\cB_{T,\tau})\geq c\log(K/\delta).
+\label{eq:tensor}
+\end{equation}
+The same conclusion holds if each table contains a fixed constant multiple of the displayed sample counts and aborts when fewer samples are available.
+\end{lemma}
+
+\paragraph{Proof.} Encode the orientation of the $K$ pairs by $v\in\{0,1\}^K$. For every directed edge $e=(v,i)$ with $v_i=0$, let $u=v^i$. Cap the combined observations from pair $i$ immediately before request $\tau+1$. Write $\Pp_u^e,\Pp_v^e$ for the capped transcript laws after mixing over $\Pi$. Let $E_e$ be the event that the algorithm finishes before the cap and outputs the exact unordered partition associated with $u$. Set
+\[
+a_e=\Pp_u^e(E_e),\qquad q_e=\Pp_v^e(E_e).
+\]
+There are $M=K2^{K-1}$ directed edges. For fixed $v$, the partitions associated with $v^i$ are distinct wrong outputs. Hence
+\begin{equation}
+\sum_e q_e\leq2^K\delta,\qquad \bar q\leq\frac{2\delta}{K}.
+\label{eq:qbar}
+\end{equation}
+If $N_i$ is the total number of observations from pair $i$, correctness under $u$ gives $a_e\geq1-\delta-\Pp_u(N_i>\tau)$. Changing variables from $(v,i)$ to $(u,i)$,
+\begin{align}
+\frac1M\sum_e\Pp_u(N_i>\tau)
+&\leq\frac{1}{M\tau}\sum_u\sum_{i:u_i=1}\E_uN_i\\
+&\leq\frac{2T}{K\tau}\leq\frac18.
+\label{eq:capaverage}
+\end{align}
+Thus $\bar a\geq5/8$. Binary data processing and joint convexity yield
+\begin{align}
+\frac1M\sum_e\KL(\Pp_u^e\|\Pp_v^e)
+&\geq\frac1M\sum_e\operatorname{kl}(a_e,q_e)\\
+&\geq\operatorname{kl}(\bar a,\bar q)
+\geq\frac18\log(K/\delta).
+\label{eq:binarykl}
+\end{align}
+For a fixed edge, $T$ samples from each global reference and $\tau$ samples from each changed source simulate the capped adaptive transcript. Every other source has the same label at both endpoints, and all such observations consume at most $T$ samples. Data processing bounds every edge divergence by the left side of \eqref{eq:tensor}. \hfill$\square$
+
+The proof uses the numerator laws to control allocation and the denominator laws to control neighboring wrong outputs. This directionality is essential. A symmetric posterior argument would require reverse mixture divergences that standard LFHT lower bounds do not provide.
+
+\section{Three Hard Profiles}
+
+Lemma~\ref{lem:tensor} turns any paired LFHT mixture upper bound into an exact-recovery lower bound. We use three separate priors. A single bound containing the sum of their profiles would prove only the smallest threshold.
+
+\begin{proposition}[Paired mixture profiles]
+\label{prop:profiles}
+For $t\leq s$, the following priors are available in their stated active regimes:
+\begin{align}
+\KL(\cA_{s,t}\|\cB_{s,t})
+&\leq C\varepsilon^2t,
+\label{eq:profile-known}\\
+\KL(\cA_{s,t}\|\cB_{s,t})
+&\leq C\frac{\varepsilon^4st}{N},
+\label{eq:profile-dense}\\
+\KL(\widetilde\cA_{s,t}\|\widetilde\cB_{s,t})
+&\leq C\frac{\varepsilon^4s^2t}{N^2}.
+\label{eq:profile-sparse}
+\end{align}
+The first prior is a fixed Bernoulli pair. The second is supported on $\cP_N(B)$. The last laws are Poisson tables from random finite measures whose normalized versions are valid $\varepsilon$-separated distributions except with probability $O(\delta)$ in the active cubic regime.
+\end{proposition}
+
+For \eqref{eq:profile-known}, take $P=\Ber((1+\varepsilon)/2)$ and $Q=\Ber((1-\varepsilon)/2)$. The pair-swap KL is $t\{\KL(P\|Q)+\KL(Q\|P)\}\leq C\varepsilon^2t$.
+
+For \eqref{eq:profile-dense}, take $Q$ uniform and let $P_\eta$ be the Paninski perturbation with an independent sign on every symbol-pair \citep{paninski2008coincidence}. Poissonize and put $a\asymp\varepsilon$, $\lambda=s/N$, and $\mu=t/N$. Conditional on the reference counts in one pair, let $m$ be the posterior mean of its sign. The two target laws are $M_{m,\mu}\otimes U_\mu$ and $U_\mu\otimes M_{m,\mu}$, where $U_\mu$ is the uniform Poisson channel and $M_{m,\mu}$ is its posterior-predictive sign mixture. The conditional KL is their Jeffreys divergence.
+
+Two short channel calculations give
+\begin{align}
+\E m^2&\leq Ca^2\lambda,
+\label{eq:posterior-moment}\\
+J(M_{m,\mu},U_\mu)&\leq C\{a^2\mu m^2+a^4\mu^2\}.
+\label{eq:predictive-j}
+\end{align}
+For \eqref{eq:posterior-moment}, the posterior second moment is at most half the chi-square divergence between the two reference sign channels, which is $\exp(O(a^2\lambda))-1$. For the forward half of \eqref{eq:predictive-j}, direct Poisson moments give the exact identity
+\[
+\chi^2(M_{m,\mu}\|U_\mu)
+=\cosh(2a^2\mu)-1+m^2\sinh(2a^2\mu).
+\]
+For the reverse half, conditioning on the total target count $R$ is useful. The equal sign mixture agrees exactly with the uniform channel for $R=0,1$. For $R\geq2$, its conditional chi-square is at most $CR(R-1)a^4e^{CRa^2}$ and its density is at least $e^{-CRa^2}$. This gives $\KL(U_\mu\|M_{0,\mu})\leq Ca^4\mu^2$. A nonzero posterior mean adds at most $Cm^2a^2\mu$. Summing \eqref{eq:predictive-j} over the symbol pairs and using $t\leq s$ proves the Poissonized form of \eqref{eq:profile-dense}. Constant-factor Poisson oversampling transfers it to the fixed table.
+
+The sparse construction adapts the finite-measure method of \citet{diakonikolas2021highprob} and the LFHT calculation of \citet{gerber2023classification}. Independently for each symbol, with probability $s/N$ set $(\tilde p,\tilde q)=(1/s,1/s)$. Otherwise set it to $(\zeta/N,2\zeta/N)$ or $(\zeta/N,0)$ with equal probabilities, where $\zeta\asymp\varepsilon$. Put
+\[
+\lambda=\frac{\zeta s}{N},\qquad
+\mu=\frac{\zeta t}{N},\qquad
+\theta=\lambda\mu.
+\]
+For one coordinate, let $(a,b,c,d)$ be the two reference and two target Poisson counts. The common heavy component lower-bounds the denominator by
+\[
+\frac{c}{a!b!c!d!}\frac{s}{N}\left(\frac ts\right)^{c+d}.
+\]
+After factoring $\lambda^a\mu^{c+d}/(a!b!c!d!)$, the likelihood difference is a constant multiple of
+\begin{align*}
+I_{bcd}={}&e^{-3\lambda-3\mu}2^b\lambda^b(2^d-2^c)\\
+&+e^{-\lambda-\mu}\one\{b=0\}
+\{\one\{d=0\}-\one\{c=0\}\}.
+\end{align*}
+It vanishes when $c=d$. If $c+d=1$ and $b=0$, its two terms cancel to first order and $|I_{bcd}|\leq C\lambda$. If $c+d=1$ and $b\geq1$, the reference count supplies $\lambda^b$. If $c+d\geq2$, then $\theta^{c+d}\leq\lambda^2\theta$. Summing the factorial series gives the one-coordinate bound
+\[
+\chi^2(X\|Y)\leq C\frac Ns\lambda^2\theta
+=C\frac{\zeta^4s^2t}{N^3}.
+\]
+Tensoring over $N$ coordinates proves \eqref{eq:profile-sparse}.
+
+For completeness, let $H$ be the number of heavy coordinates. With probability at least $1-Ce^{-cs}-Ce^{-cN}$, $H\asymp s$, both total masses are bounded above and below, and the imbalance between the two rare types is at most half their count. On this event, normalization preserves total variation at least $\zeta/32$. Choose $\zeta=32\varepsilon$. Conditional on each Poisson total, labels are iid from the normalized measure. Constant oversampling therefore simulates the capped adaptive algorithm, with failure $O(\delta)$ in the active cubic regime. The supplement provides all constants and the fixed-table transfer.
+
+\paragraph{Lower-bound conclusion.} Substitute $s\asymp T$ and $t\asymp T/K$ into the three profiles and compare with Lemma~\ref{lem:tensor}. This gives
+\[
+T\gtrsim \frac{KL}{\varepsilon^2},\quad
+T\gtrsim\frac{\sqrt{NKL}}{\varepsilon^2},\quad
+T\gtrsim\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}.
+\]
+The dense prior is uniformly bounded. The sparse prior is needed only when its term dominates, which implies $N\gtrsim KL/\varepsilon^4$. In that regime a contradiction below a sufficiently small constant times the cubic threshold ensures $s\leq N/2$ and makes every normalization failure $O(\delta)$.
+
+\section{Upper Bound}
+
+Run one high-confidence LFHT rule per target and share its reference samples. Set each target error to $\delta/K$. The high-confidence LFHT regions of \citet{gerber2023classification} imply that the target count $t$ and shared reference count $s$ can be chosen so that
+\[
+s+Kt\lesssim
+\frac{KL}{\varepsilon^2}
++\frac{\sqrt{NKL}}{\varepsilon^2}
++\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}
+\]
+for $\cP_N$. Their bounded-mass region removes the cubic term. If $P,Q$ are known, a Scheff\'e test uses $O(L/\varepsilon^2)$ observations per target. A union bound gives exact error at most $\delta$.
+
+For completeness, a sufficient form of the high-confidence discrete LFHT region is
+\[
+\begin{aligned}
+t&\gtrsim\frac{L}{\varepsilon^2},&
+s&\gtrsim\frac{\sqrt{NL}}{\varepsilon^2}+\frac{L}{\varepsilon^2},\\
+st&\gtrsim\frac{NL}{\varepsilon^4},&
+s^2t&\gtrsim\frac{N^2L}{\varepsilon^4}.
+\end{aligned}
+\]
+The last constraint is needed only for the unrestricted class. Balancing $s$ against $Kt$ in the two product constraints produces the square-root and cubic terms in \eqref{eq:arbitrary}. The first two constraints are dominated by the displayed total rate. This is the same optimization used by \citet{kumar2026clustering} at constant total error, with $\log K$ replaced by $L$.
+
+\section{Relation to Prior Work}
+
+\citet{kumar2026clustering} establish the discrete distribution-clustering model and identify the three classification phases, but their adaptive lower bounds omit the factor $\log K$. Our result shows that their per-target confidence allocation is optimal and gives the explicit replacement $\log K\mapsto\log(K/\delta)$.
+
+Moderate-confidence logarithms are known for adaptive identification with fixed distributions. In particular, \citet{simchowitz2017simulator} prove permutation lower bounds for best-arm and thresholding problems. The low-domain Bernoulli case of our theorem is consistent with that phenomenon. Our contribution is the shared-nuisance tensorization that preserves dense and sparse LFHT mixture exponents.
+
+Sequential clustering work studies instance-dependent expected stopping time. \citet{yang2024clustering} analyze Gaussian mean clustering. \citet{yavas2025framework} give a finite-alphabet framework and a nonasymptotic transportation lower bound, followed by asymptotic optimality as $\delta\to0$. Their pairwise change of measure yields $\log(1/\delta)$ for a fixed instance. It does not evaluate worst-case alphabet-size phases or the additional $\log K$ at constant confidence. Related sequential signal-recovery results also focus on fixed numbers of streams or vanishing-error asymptotics \citep{song2017signal,juneja2019partition}.
+
+The high-confidence binary ingredients come from distribution testing. \citet{gerber2023classification} characterize LFHT regions for several nonparametric classes and use pseudo-distribution methods from \citet{diakonikolas2021highprob}. Our proof uses their hard one-target calculations, but the exact-recovery direct sum and paired-swap profiles are new.
+
+\section{Discussion}
+
+Exact recovery creates a moderate-confidence penalty even when every sample is adaptively allocated and all nuisance observations are shared. The penalty is not tied to independent target tests. It follows from the disjoint mass of neighboring wrong partitions.
+
+Two directions remain. First, the discovery stage in unbalanced distribution clustering has separate logarithmic gaps depending on the minority size. Second, the directed tensorization lemma applies to any likelihood-free family with a suitable paired mixture profile. Extending the exact minimax table beyond discrete distributions should require new profile calculations rather than a new adaptive argument.
+
+\bibliography{references}
+
+\clearpage
+\appendix
+\end{document}
