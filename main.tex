@@ -32,15 +32,13 @@
 \aistatsaddress{Johns Hopkins University}
 ]
 \begin{abstract}
-Likelihood-free testing classifies one target using samples from two unknown reference distributions. What is the cost of classifying many targets exactly when reference samples can be shared and sampling can be fully adaptive? A recent distribution-clustering result answers this question up to a factor $\log K$. We close the gap. For $K$ targets over an $N$-symbol alphabet, separation $\varepsilon$ in total variation, and exact-recovery error $\delta$, the minimax total sample complexity for arbitrary discrete distributions is
-\[
+Likelihood-free testing classifies one target using samples from two unknown reference distributions. What is the cost of classifying many targets exactly when reference samples can be shared and sampling can be fully adaptive? A recent distribution-clustering result answers this question up to a factor $\log K$. We close the gap. For $K$ targets over an $N$-symbol alphabet, separation $\varepsilon$ in total variation, and exact-recovery error $\delta$, the minimax total sample complexity for arbitrary discrete distributions is \[
 \Theta\!\left(\begin{aligned}
 &\frac{K\log(K/\delta)}{\varepsilon^2}
 +\frac{\sqrt{NK\log(K/\delta)}}{\varepsilon^2}\\
 &\quad+\left(\frac{N^2K\log(K/\delta)}{\varepsilon^4}\right)^{1/3}
 \end{aligned}\right).
-\]
-The cubic term disappears for uniformly bounded probability masses, and both nuisance-estimation terms disappear when the references are known. The lower bound holds even when the two class sizes are known, the targets arrive in revealed pairs containing one member of each class, and the algorithm allocates samples adaptively. The proof introduces a directed adaptive tensorization lemma. Neighboring wrong outputs have total probability at most $\delta$, while a capped changed pair receives only $O(T/K)$ samples on average. Joint convexity of binary relative entropy then forces one capped likelihood-free experiment to carry $\Omega(\log(K/\delta))$ information. Dense Paninski and sparse Poisson-mixture priors produce the square-root and cubic phases. The result shows that the union-bound logarithm in exact likelihood-free classification is minimax, rather than an artifact of testing targets separately.
+\] The cubic term disappears for uniformly bounded probability masses, and both nuisance-estimation terms disappear when the references are known. The lower bound holds even when the two class sizes are known, the targets arrive in revealed pairs containing one member of each class, and the algorithm allocates samples adaptively. The proof introduces a directed adaptive tensorization lemma. Neighboring wrong outputs have total probability at most $\delta$, while a capped changed pair receives only $O(T/K)$ samples on average. Joint convexity of binary relative entropy then forces one capped likelihood-free experiment to carry $\Omega(\log(K/\delta))$ information. Dense Paninski and sparse Poisson-mixture priors produce the square-root and cubic phases. The result shows that the union-bound logarithm in exact likelihood-free classification is minimax, rather than an artifact of testing targets separately.
 \end{abstract}
 
 \section{Introduction}
@@ -49,11 +47,7 @@ Likelihood-free hypothesis testing (LFHT) asks whether a target sample comes fro
 
 This multiple-target problem is the classification stage in the distribution-clustering model of \citet{kumar2026clustering}. They give an upper bound by running high-confidence LFHT for every target with error $O(1/K)$. Their lower bound uses a capped switching reduction to one constant-confidence LFHT instance. The resulting rates differ by a factor up to $\log K$, and the authors leave both this gap and explicit failure-probability dependence open.
 
-We prove that the logarithm is necessary in every phase. Let
-\[
-L=\log(K/\delta).
-\]
-For arbitrary distributions on $[N]$, the exact minimax cost is
+We prove that the logarithm is necessary in every phase. Let \[ L=\log(K/\delta). \] For arbitrary distributions on $[N]$, the exact minimax cost is
 \begin{equation}
 \frac{KL}{\varepsilon^2}
 +\frac{\sqrt{NKL}}{\varepsilon^2}
@@ -80,11 +74,7 @@ The argument remains valid under a strong fixed-size promise. We place $2K$ targ
 
 Let $P,Q$ be distributions on $[N]$ with $\TV(P,Q)\geq\varepsilon$. Two reference sources generate iid observations from $P$ and $Q$. There are $K$ target sources $D_1,\ldots,D_K$, each equal to $P$ or $Q$. At each time, an algorithm chooses a source using the complete past and receives one fresh observation. It must output all target labels. The total number of observations is at most $T$ on every path. We call this problem \emph{exact multiple LFHT}.
 
-Let $\cP_N$ be all distributions on $[N]$, and for a fixed $B>1$ let
-\[
-\cP_N(B)=\{p:\|p\|_\infty\leq B/N\}.
-\]
-Write $T^\star_{\cP}$ for the smallest worst-case pathwise budget giving exact-recovery error at most $\delta$. If $P,Q$ are known explicitly, reference samples are unnecessary and we write $T^\star_{\rm known}$.
+Let $\cP_N$ be all distributions on $[N]$, and for a fixed $B>1$ let \[ \cP_N(B)=\{p:\|p\|_\infty\leq B/N\}. \] Write $T^\star_{\cP}$ for the smallest worst-case pathwise budget giving exact-recovery error at most $\delta$. If $P,Q$ are known explicitly, reference samples are unnecessary and we write $T^\star_{\rm known}$.
 
 \begin{theorem}[Exact multiple LFHT]
 \label{thm:main}
@@ -138,10 +128,7 @@ The same conclusion holds if each table contains a fixed constant multiple of th
 \end{lemma}
 
 \paragraph{Proof.} Encode the orientation of the $K$ pairs by $v\in\{0,1\}^K$. For every directed edge $e=(v,i)$ with $v_i=0$, let $u=v^i$. Cap the combined observations from pair $i$ immediately before request $\tau+1$. Write $\Pp_u^e,\Pp_v^e$ for the capped transcript laws after mixing over $\Pi$. Let $E_e$ be the event that the algorithm finishes before the cap and outputs the exact unordered partition associated with $u$. Set
-\[
-a_e=\Pp_u^e(E_e),\qquad q_e=\Pp_v^e(E_e).
-\]
-There are $M=K2^{K-1}$ directed edges. For fixed $v$, the partitions associated with $v^i$ are distinct wrong outputs. Hence
+\[ a_e=\Pp_u^e(E_e),\qquad q_e=\Pp_v^e(E_e). \] There are $M=K2^{K-1}$ directed edges. For fixed $v$, the partitions associated with $v^i$ are distinct wrong outputs. Hence
 \begin{equation}
 \sum_e q_e\leq2^K\delta,\qquad \bar q\leq\frac{2\delta}{K}.
 \label{eq:qbar}
@@ -197,67 +184,33 @@ Two short channel calculations give
 J(M_{m,\mu},U_\mu)&\leq C\{a^2\mu m^2+a^4\mu^2\}.
 \label{eq:predictive-j}
 \end{align}
-For \eqref{eq:posterior-moment}, the posterior second moment is at most half the chi-square divergence between the two reference sign channels, which is $\exp(O(a^2\lambda))-1$. For the forward half of \eqref{eq:predictive-j}, direct Poisson moments give the exact identity
-\[
-\chi^2(M_{m,\mu}\|U_\mu)
-=\cosh(2a^2\mu)-1+m^2\sinh(2a^2\mu).
-\]
-For the reverse half, conditioning on the total target count $R$ is useful. The equal sign mixture agrees exactly with the uniform channel for $R=0,1$. For $R\geq2$, its conditional chi-square is at most $CR(R-1)a^4e^{CRa^2}$ and its density is at least $e^{-CRa^2}$. This gives $\KL(U_\mu\|M_{0,\mu})\leq Ca^4\mu^2$. A nonzero posterior mean adds at most $Cm^2a^2\mu$. Summing \eqref{eq:predictive-j} over the symbol pairs and using $t\leq s$ proves the Poissonized form of \eqref{eq:profile-dense}. Constant-factor Poisson oversampling transfers it to the fixed table.
+For \eqref{eq:posterior-moment}, the posterior second moment is at most half the chi-square divergence between the two reference sign channels, which is $\exp(O(a^2\lambda))-1$. For the forward half of \eqref{eq:predictive-j}, direct Poisson moments give the exact identity \[ \chi^2(M_{m,\mu}\|U_\mu) =\cosh(2a^2\mu)-1+m^2\sinh(2a^2\mu). \] For the reverse half, conditioning on the total target count $R$ is useful. The equal sign mixture agrees exactly with the uniform channel for $R=0,1$. For $R\geq2$, its conditional chi-square is at most $CR(R-1)a^4e^{CRa^2}$ and its density is at least $e^{-CRa^2}$. This gives $\KL(U_\mu\|M_{0,\mu})\leq Ca^4\mu^2$. A nonzero posterior mean adds at most $Cm^2a^2\mu$. Summing \eqref{eq:predictive-j} over the symbol pairs and using $t\leq s$ proves the Poissonized form of \eqref{eq:profile-dense}. Constant-factor Poisson oversampling transfers it to the fixed table.
 
-The sparse construction adapts the finite-measure method of \citet{diakonikolas2021highprob} and the LFHT calculation of \citet{gerber2023classification}. Independently for each symbol, with probability $s/N$ set $(\tilde p,\tilde q)=(1/s,1/s)$. Otherwise set it to $(\zeta/N,2\zeta/N)$ or $(\zeta/N,0)$ with equal probabilities, where $\zeta\asymp\varepsilon$. Put
-\[
-\lambda=\frac{\zeta s}{N},\qquad
-\mu=\frac{\zeta t}{N},\qquad
-\theta=\lambda\mu.
-\]
-For one coordinate, let $(a,b,c,d)$ be the two reference and two target Poisson counts. The common heavy component lower-bounds the denominator by
-\[
-\frac{c}{a!b!c!d!}\frac{s}{N}\left(\frac ts\right)^{c+d}.
-\]
-After factoring $\lambda^a\mu^{c+d}/(a!b!c!d!)$, the likelihood difference is a constant multiple of
+The sparse construction adapts the finite-measure method of \citet{diakonikolas2021highprob} and the LFHT calculation of \citet{gerber2023classification}. Independently for each symbol, with probability $s/N$ set $(\tilde p,\tilde q)=(1/s,1/s)$. Otherwise set it to $(\zeta/N,2\zeta/N)$ or $(\zeta/N,0)$ with equal probabilities, where $\zeta\asymp\varepsilon$. Put \[ \lambda=\frac{\zeta s}{N},\qquad \mu=\frac{\zeta t}{N},\qquad \theta=\lambda\mu. \] For one coordinate, let $(a,b,c,d)$ be the two reference and two target Poisson counts. The common heavy component lower-bounds the denominator by \[ \frac{c}{a!b!c!d!}\frac{s}{N}\left(\frac ts\right)^{c+d}. \] After factoring $\lambda^a\mu^{c+d}/(a!b!c!d!)$, the likelihood difference is a constant multiple of
 \begin{align*}
 I_{bcd}={}&e^{-3\lambda-3\mu}2^b\lambda^b(2^d-2^c)\\
 &+e^{-\lambda-\mu}\one\{b=0\}
 \{\one\{d=0\}-\one\{c=0\}\}.
 \end{align*}
-It vanishes when $c=d$. If $c+d=1$ and $b=0$, its two terms cancel to first order and $|I_{bcd}|\leq C\lambda$. If $c+d=1$ and $b\geq1$, the reference count supplies $\lambda^b$. If $c+d\geq2$, then $\theta^{c+d}\leq\lambda^2\theta$. Summing the factorial series gives the one-coordinate bound
-\[
-\chi^2(X\|Y)\leq C\frac Ns\lambda^2\theta
-=C\frac{\zeta^4s^2t}{N^3}.
-\]
-Tensoring over $N$ coordinates proves \eqref{eq:profile-sparse}.
+It vanishes when $c=d$. If $c+d=1$ and $b=0$, its two terms cancel to first order and $|I_{bcd}|\leq C\lambda$. If $c+d=1$ and $b\geq1$, the reference count supplies $\lambda^b$. If $c+d\geq2$, then $\theta^{c+d}\leq\lambda^2\theta$. Summing the factorial series gives the one-coordinate bound \[ \chi^2(X\|Y)\leq C\frac Ns\lambda^2\theta =C\frac{\zeta^4s^2t}{N^3}. \] Tensoring over $N$ coordinates proves \eqref{eq:profile-sparse}.
 
 For completeness, let $H$ be the number of heavy coordinates. With probability at least $1-Ce^{-cs}-Ce^{-cN}$, $H\asymp s$, both total masses are bounded above and below, and the imbalance between the two rare types is at most half their count. On this event, normalization preserves total variation at least $\zeta/32$. Choose $\zeta=32\varepsilon$. Conditional on each Poisson total, labels are iid from the normalized measure. Constant oversampling therefore simulates the capped adaptive algorithm, with failure $O(\delta)$ in the active cubic regime. The supplement provides all constants and the fixed-table transfer.
 
 \paragraph{Lower-bound conclusion.} Substitute $s\asymp T$ and $t\asymp T/K$ into the three profiles and compare with Lemma~\ref{lem:tensor}. This gives
-\[
-T\gtrsim \frac{KL}{\varepsilon^2},\quad
-T\gtrsim\frac{\sqrt{NKL}}{\varepsilon^2},\quad
-T\gtrsim\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}.
-\]
-The dense prior is uniformly bounded. The sparse prior is needed only when its term dominates, which implies $N\gtrsim KL/\varepsilon^4$. In that regime a contradiction below a sufficiently small constant times the cubic threshold ensures $s\leq N/2$ and makes every normalization failure $O(\delta)$.
+\[ T\gtrsim \frac{KL}{\varepsilon^2},\quad T\gtrsim\frac{\sqrt{NKL}}{\varepsilon^2},\quad T\gtrsim\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}. \] The dense prior is uniformly bounded. The sparse prior is needed only when its term dominates, which implies $N\gtrsim KL/\varepsilon^4$. In that regime a contradiction below a sufficiently small constant times the cubic threshold ensures $s\leq N/2$ and makes every normalization failure $O(\delta)$.
 
 \section{Upper Bound}
 
-Run one high-confidence LFHT rule per target and share its reference samples. Set each target error to $\delta/K$. The high-confidence LFHT regions of \citet{gerber2023classification} imply that the target count $t$ and shared reference count $s$ can be chosen so that
-\[
-s+Kt\lesssim
-\frac{KL}{\varepsilon^2}
-+\frac{\sqrt{NKL}}{\varepsilon^2}
-+\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3}
-\]
-for $\cP_N$. Their bounded-mass region removes the cubic term. If $P,Q$ are known, a Scheff\'e test uses $O(L/\varepsilon^2)$ observations per target. A union bound gives exact error at most $\delta$.
+Run one high-confidence LFHT rule per target and share its reference samples. Set each target error to $\delta/K$. The high-confidence LFHT regions of \citet{gerber2023classification} imply that the target count $t$ and shared reference count $s$ can be chosen so that \[ s+Kt\lesssim \frac{KL}{\varepsilon^2} +\frac{\sqrt{NKL}}{\varepsilon^2} +\left(\frac{N^2KL}{\varepsilon^4}\right)^{1/3} \] for $\cP_N$. Their bounded-mass region removes the cubic term. If $P,Q$ are known, a Scheff\'e test uses $O(L/\varepsilon^2)$ observations per target. A union bound gives exact error at most $\delta$.
 
-For completeness, a sufficient form of the high-confidence discrete LFHT region is
-\[
+For completeness, a sufficient form of the high-confidence discrete LFHT region is \[
 \begin{aligned}
 t&\gtrsim\frac{L}{\varepsilon^2},&
 s&\gtrsim\frac{\sqrt{NL}}{\varepsilon^2}+\frac{L}{\varepsilon^2},\\
 st&\gtrsim\frac{NL}{\varepsilon^4},&
 s^2t&\gtrsim\frac{N^2L}{\varepsilon^4}.
 \end{aligned}
-\]
-The last constraint is needed only for the unrestricted class. Balancing $s$ against $Kt$ in the two product constraints produces the square-root and cubic terms in \eqref{eq:arbitrary}. The first two constraints are dominated by the displayed total rate. This is the same optimization used by \citet{kumar2026clustering} at constant total error, with $\log K$ replaced by $L$.
+\] The last constraint is needed only for the unrestricted class. Balancing $s$ against $Kt$ in the two product constraints produces the square-root and cubic terms in \eqref{eq:arbitrary}. The first two constraints are dominated by the displayed total rate. This is the same optimization used by \citet{kumar2026clustering} at constant total error, with $\log K$ replaced by $L$.
 
 \section{Relation to Prior Work}
 
