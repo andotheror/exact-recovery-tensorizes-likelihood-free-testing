@@ -21,5 +21,7 @@ likelihood-free hypothesis testing, tensorization, exact recovery, sample comple
 
 ## Files
 
+- `main_2026-08-12.pdf`, the paper as first published, with its OpenTimestamps proof `main_2026-08-12.pdf.ots`.
+- `supplement_2026-08-12.pdf`, the supplement as first published, with its OpenTimestamps proof `supplement_2026-08-12.pdf.ots`.
 - source: `aistats2027.sty`, `main_2026-08-12.tex`, `references.bib`, `supplement_2026-08-12.tex`.
-- also: `main_2026-08-12.bbl`, `main_2026-08-12.pdf`, `supplement_2026-08-12.bbl`, `supplement_2026-08-12.pdf`.
+- also: `main_2026-08-12.bbl`, `supplement_2026-08-12.bbl`.
